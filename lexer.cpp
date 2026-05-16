@@ -36,6 +36,9 @@ enum TokenType
     JABTAK,
     AGAR,
     MAGAR,
+    TRUE,
+    FALSE,
+    VAR,
     TOKEN_EOF,
 };
 
@@ -86,6 +89,18 @@ private:
     int start = 0;
     int curr = 0;
     int line = 1;
+
+    map<string, TokeType> keywords = {
+        {"agar", AGAR},
+        {"magar", MAGAR},
+        {"jabtak", JABTAK},
+        {"aur", AND},
+        {"ya", OR},
+        {"for", FOR},
+        {"true", TRUE},
+        {"false", FALSE},
+        {"var", VAR},
+    }
 
     bool atEnd()
     {
@@ -264,7 +279,10 @@ private:
     {
         while (isalnum(peek()))
             consume();
-        // figuring out keywords
-        tokens.push_back(Token(IDENTIFIER, source.substr(start, curr - start), line));
+        string text = source.substr(start, curr - start);
+        TokenType type = keywords.get(text);
+        if (type == null)
+            type = IDENTIFIER;
+        tokens.push_back(Token(type, source.substr(start, curr - start), line));
     }
 };
