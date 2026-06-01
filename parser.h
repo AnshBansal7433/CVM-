@@ -1,0 +1,199 @@
+#pragma once
+#include "lexer.h"
+#include "ast.h"
+
+class Parser {
+
+private:
+
+    vector<Token> tokens;
+
+    int curr = 0;
+
+    bool atEnd() {
+        return peek().type == TOKEN_EOF;
+    }
+
+    Token peek2() {
+        if (curr+1>=tokens.size()) {
+            return peek();
+        }
+        return tokens[curr + 1];
+    }
+
+    Token peek() {
+        return tokens[curr];
+    }
+
+    Token previous() {
+        return tokens[curr - 1];
+    }
+
+    Token advance() {
+        if (!atEnd()) curr++;
+        return previous();
+    }
+
+    bool check(TokenType type) {
+        if (atEnd()) return false;
+        return peek().type == type;
+    }
+
+    bool match(initializer_list<TokenType> types) {
+        for (TokenType type : types) {
+            if (check(type)) {
+                advance();
+                return true;
+            }
+        }
+        return false;
+    }
+
+public:
+
+    Parser(vector<Token> tokens) {
+        this->tokens = tokens;
+    }
+
+    Program parse() {
+        Program program;
+        while (!atEnd()) {
+            program.statements.push_back(statement());
+        }
+        return program;
+    }
+    
+    unique_ptr<Stmt> statement() {
+        if (match({VAR}))
+            return varDeclaration();
+        else if(match({IDENTIFIER}))
+            return varChange();
+        
+        return printStatement();
+    }
+
+    // STATEMENTS
+    
+    unique_ptr<Stmt> varDeclaration() {
+        Token name = advance();
+        if(!atEnd() && peek().line==previous().line){
+            advance();
+            auto init = expression();
+            return make_unique<VarStmt>(
+                name.lexeme,
+                move(init)
+            );
+        }
+        else{
+            return make_unique<VarStmt>(
+                name.lexeme,
+                nullptr
+            );
+        }
+    }
+
+    unique_ptr<Stmt> varChange() {
+        Token name = previous();
+        advance();
+        auto init = expression();
+        return make_unique<VarStmt>(
+            name.lexeme,
+            move(init)
+        );
+    }
+
+    unique_ptr<Stmt> printStatement() {
+        auto expr = expression();
+        return make_unique<PrintStmt>(
+            move(expr)
+        );
+    }
+
+    // EXPRESSIONS
+
+    unique_ptr<Expr> comparison() {
+        auto expr = addition();
+        while(match({
+            LESS,
+            LESS_EQUAL,
+            GREATER,
+            GREATER_EQUAL,
+            EQUAL_EQUAL,
+            NOT_EQUAL
+        }))
+        {
+            Token op = previous();
+            auto right = addition();
+            expr = make_unique<BinaryExpr>(
+                move(expr),
+                op.lexeme,
+                move(right)
+            );
+        }
+        return expr;
+    }
+
+
+    unique_ptr<Expr> expression() {
+        return comparison();
+    }
+
+    unique_ptr<Expr> addition() {
+        auto expr = multiplication();
+        while (match({PLUS, MINUS})) {
+            Token op = previous();
+            auto right = multiplication();
+            expr = make_unique<BinaryExpr>(
+                move(expr),
+                op.lexeme,
+                move(right)
+            );
+        }
+        return expr;
+    }
+
+    unique_ptr<Expr> multiplication() {
+        auto expr = primary();
+        while (match({STAR, SLASH})) {
+            Token op = previous();
+            auto right = primary();
+            expr = make_unique<BinaryExpr>(
+                move(expr),
+                op.lexeme,
+                move(right)
+            );
+        }
+        return expr;
+    }
+
+    unique_ptr<Expr> primary() {
+        if (match({NUMBER})) {
+            return make_unique<NumberExpr>(
+                previous().lexeme
+            );
+        }
+
+        if (match({IDENTIFIER})) {
+            return make_unique<VariableExpr>(
+                previous().lexeme
+            );
+        }
+
+        if (match({LEFT_PAREN})) {
+            auto expr = expression();
+            advance();
+            return expr;
+        }
+        
+        if (match({TRUE})) {
+            return make_unique<BooleanExpr>(true);
+        }
+
+        if (match({FALSE})) {
+            return make_unique<BooleanExpr>(false);
+        }
+        return nullptr;
+    }
+
+    
+};
