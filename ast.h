@@ -48,6 +48,33 @@ public:
     }
 };
 
+class AOExpr : public Expr {
+public:
+    unique_ptr<Expr> left;
+    string op;
+    unique_ptr<Expr> right;
+
+    AOExpr(
+        unique_ptr<Expr> left,
+        string op,
+        unique_ptr<Expr> right
+    ){
+        this->left = move(left);
+        this->op = op;
+        this->right = move(right);
+    }
+};
+
+class BooleanExpr : public Expr {
+public:
+
+    bool value;
+
+    BooleanExpr(bool value) {
+        this->value = value;
+    }
+};
+
 // STATEMENTS
 
 class Stmt {
@@ -78,30 +105,39 @@ public:
     }
 };
 
-class BooleanExpr : public Expr {
+class BlockStmt : public Stmt {
 public:
+    vector<unique_ptr<Stmt>> statements;
 
-    bool value;
-
-    BooleanExpr(bool value) {
-        this->value = value;
+    BlockStmt(vector<unique_ptr<Stmt>> stmts) {
+        this->statements = move(stmts);
     }
 };
 
-class BlockStmt : public Stmt {
+class WhileStmt : public Stmt {
 public:
+    unique_ptr<Expr> condition;
+    unique_ptr<BlockStmt> body;
 
-    vector<unique_ptr<Stmt>> statements;
+    WhileStmt(unique_ptr<Expr> condition, unique_ptr<BlockStmt> body) {
+        this->condition = move(condition);
+        this->body = move(body);
+    }
 };
 
 class IfStmt : public Stmt {
 public:
-
     unique_ptr<Expr> condition;
-
     unique_ptr<Stmt> thenBranch;
-
     unique_ptr<Stmt> elseBranch;
+
+    IfStmt(unique_ptr<Expr> condition,
+        unique_ptr<Stmt> thenBranch,
+        unique_ptr<Stmt> elseBranch) {
+        this->condition = move(condition);
+        this->thenBranch = move(thenBranch);
+        this->elseBranch = move(elseBranch);
+    }
 };
 
 // PROGRAM ROOT

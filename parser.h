@@ -29,6 +29,10 @@ private:
         return tokens[curr - 1];
     }
 
+    void back(){
+        curr--;
+    }
+
     Token advance() {
         if (!atEnd()) curr++;
         return previous();
@@ -68,7 +72,12 @@ public:
             return varDeclaration();
         else if(match({IDENTIFIER}))
             return varChange();
-        
+        else if(match({JABTAK}))
+            return whileStatement();
+        else if(match({FOR}))
+            return forStatement();
+        else if(match({AGAR}))
+            return ifStatement();
         return printStatement();
     }
 
@@ -76,30 +85,21 @@ public:
     
     unique_ptr<Stmt> varDeclaration() {
         Token name = advance();
-        if(!atEnd() && peek().line==previous().line){
+        unique_ptr<Expr> init = nullptr;
+        if(!atEnd() && peek().type==EQUAL){
             advance();
-            auto init = expression();
-            return make_unique<VarStmt>(
-                name.lexeme,
-                move(init)
-            );
+            init = expression();
         }
-        else{
-            return make_unique<VarStmt>(
-                name.lexeme,
-                nullptr
-            );
-        }
+        return make_unique<VarStmt>(name.lexeme, move(init));
     }
 
     unique_ptr<Stmt> varChange() {
         Token name = previous();
-        advance();
-        auto init = expression();
-        return make_unique<VarStmt>(
-            name.lexeme,
-            move(init)
-        );
+        if (match({EQUAL})) {
+            auto init = expression();
+            return make_unique<VarStmt>(name.lexeme, move(init));
+        }
+        return nullptr;
     }
 
     unique_ptr<Stmt> printStatement() {
@@ -111,31 +111,47 @@ public:
 
     // EXPRESSIONS
 
-    unique_ptr<Expr> comparison() {
-        auto expr = addition();
-        while(match({
-            LESS,
-            LESS_EQUAL,
-            GREATER,
-            GREATER_EQUAL,
-            EQUAL_EQUAL,
-            NOT_EQUAL
-        }))
-        {
+    unique_ptr<Expr> primary() {
+        if (match({NUMBER})) {
+            return make_unique<NumberExpr>(
+                previous().lexeme
+            );
+        }
+
+        if (match({IDENTIFIER})) {
+            return make_unique<VariableExpr>(
+                previous().lexeme
+            );
+        }
+
+        if (match({LEFT_PAREN})) {
+            auto expr = expression();
+            match({RIGHT_PAREN});
+            return expr;
+        }
+        
+        if (match({TRUE})) {
+            return make_unique<BooleanExpr>(true);
+        }
+
+        if (match({FALSE})) {
+            return make_unique<BooleanExpr>(false);
+        }
+        return nullptr;
+    }
+
+    unique_ptr<Expr> AndOr() {
+        auto expr = comparison();
+        while (match({AND,OR})) {
             Token op = previous();
-            auto right = addition();
-            expr = make_unique<BinaryExpr>(
+            auto right = comparison();
+            expr = make_unique<AOExpr>(
                 move(expr),
                 op.lexeme,
                 move(right)
             );
         }
         return expr;
-    }
-
-
-    unique_ptr<Expr> expression() {
-        return comparison();
     }
 
     unique_ptr<Expr> addition() {
@@ -166,34 +182,95 @@ public:
         return expr;
     }
 
-    unique_ptr<Expr> primary() {
-        if (match({NUMBER})) {
-            return make_unique<NumberExpr>(
-                previous().lexeme
-            );
-        }
-
-        if (match({IDENTIFIER})) {
-            return make_unique<VariableExpr>(
-                previous().lexeme
-            );
-        }
-
-        if (match({LEFT_PAREN})) {
-            auto expr = expression();
-            advance();
-            return expr;
-        }
-        
-        if (match({TRUE})) {
-            return make_unique<BooleanExpr>(true);
-        }
-
-        if (match({FALSE})) {
-            return make_unique<BooleanExpr>(false);
-        }
-        return nullptr;
+    unique_ptr<Expr> expression() {
+        return AndOr();
     }
 
-    
+    unique_ptr<Expr> comparison() {
+        auto expr = addition();
+        while(match({
+            LESS,
+            LESS_EQUAL,
+            GREATER,
+            GREATER_EQUAL,
+            EQUAL_EQUAL,
+            NOT_EQUAL
+        }))
+        {
+            Token op = previous();
+            auto right = addition();
+            expr = make_unique<BinaryExpr>(
+                move(expr),
+                op.lexeme,
+                move(right)
+            );
+        }
+        return expr;
+    }
+
+    unique_ptr<BlockStmt> blockStatement(){
+        match({LEFT_BRACE});
+        vector<unique_ptr<Stmt>> stmts;
+        while(!check({RIGHT_BRACE})){
+            stmts.push_back(statement());
+        }
+        match({RIGHT_BRACE});
+        return make_unique<BlockStmt>(move(stmts));
+    }
+
+    unique_ptr<Stmt> whileStatement() {
+        match({LEFT_PAREN});
+        auto condition = expression();
+        match({RIGHT_PAREN});
+        auto body = blockStatement(); 
+        return make_unique<WhileStmt>(move(condition), move(body));
+    }
+
+    unique_ptr<Stmt> forStatement() {
+        match({LEFT_PAREN});
+        unique_ptr<Stmt> initializer = nullptr;
+        if (match({VAR})) {
+            initializer = varDeclaration();
+        } else if (match({IDENTIFIER})) {
+            initializer = varChange();
+        }
+        match({SEMICOLON});
+        unique_ptr<Expr> condition = expression();
+        match({SEMICOLON});
+        unique_ptr<Stmt> increment = nullptr;
+        if (match({IDENTIFIER})) {
+            increment = varChange();
+        }
+        match({RIGHT_PAREN});
+        auto body = blockStatement();
+        if (increment != nullptr) {
+            body->statements.push_back(move(increment));
+        }
+        auto whileLoop = make_unique<WhileStmt>(move(condition), move(body));
+        vector<unique_ptr<Stmt>> FStmts;
+        if (initializer != nullptr) {
+            FStmts.push_back(move(initializer));
+        }
+        FStmts.push_back(move(whileLoop));
+        return make_unique<BlockStmt>(move(FStmts));
+    }
+
+    unique_ptr<Stmt> ifStatement() {
+        match({LEFT_PAREN});
+        auto condition = expression();
+        match({RIGHT_PAREN});
+        auto thenBranch = blockStatement(); 
+        unique_ptr<Stmt> elseBranch = nullptr;
+        if (match({MAGAR})) { 
+            if (check(LEFT_BRACE)) {
+                elseBranch = blockStatement();
+            }
+        }
+
+        return make_unique<IfStmt>(
+            move(condition),
+            move(thenBranch),
+            move(elseBranch)
+        );
+    }
 };
