@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <cctype> 
+#include <cctype>
 
 using namespace std;
 
@@ -36,9 +36,11 @@ enum TokenType
     AND,
     OR,
     JABTAK,
-    AGAR,
-    MAGAR,
-    
+    WHEN,
+    ELIF,
+    OTHER,
+    SCAN,
+    SHOW,
     TRUE,
     FALSE,
     VAR,
@@ -91,8 +93,9 @@ public:
 private:
     // Defined keywords map here with correct type spelling and trailing semicolon
     map<string, TokenType> keywords = {
-        {"agar", AGAR},
-        {"magar", MAGAR},
+        {"when", WHEN},
+        {"elif", ELIF},
+        {"other", OTHER},
         {"jabtak", JABTAK},
         {"aur", AND},
         {"ya", OR},
@@ -100,6 +103,8 @@ private:
         {"true", TRUE},
         {"false", FALSE},
         {"var", VAR},
+        {"scan", SCAN},
+        {"show", SHOW},
     };
 
     int start = 0;
@@ -284,18 +289,18 @@ private:
         while (isalnum(peek()))
             consume();
         string text = source.substr(start, curr - start);
-        
-        // Fixed C++ map search mechanics
+
         TokenType type;
-        if (keywords.find(text) != keywords.end())
+        auto it = keywords.find(text);
+        if (it != keywords.end())
         {
-            type = keywords[text];
+            type = it->second;
         }
         else
         {
             type = IDENTIFIER;
         }
-        
+
         tokens.push_back(Token(type, text, line));
     }
 };

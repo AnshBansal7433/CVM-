@@ -8,30 +8,36 @@ using namespace std;
 
 // EXPRESSIONS
 
-class Expr {
+class Expr
+{
 public:
     virtual ~Expr() = default;
 };
 
-class NumberExpr : public Expr {
+class NumberExpr : public Expr
+{
 public:
     string value;
 
-    NumberExpr(string value) {
+    NumberExpr(string value)
+    {
         this->value = value;
     }
 };
 
-class VariableExpr : public Expr {
+class VariableExpr : public Expr
+{
 public:
     string name;
 
-    VariableExpr(string name) {
+    VariableExpr(string name)
+    {
         this->name = name;
     }
 };
 
-class BinaryExpr : public Expr {
+class BinaryExpr : public Expr
+{
 public:
     unique_ptr<Expr> left;
     string op;
@@ -40,15 +46,16 @@ public:
     BinaryExpr(
         unique_ptr<Expr> left,
         string op,
-        unique_ptr<Expr> right
-    ) {
+        unique_ptr<Expr> right)
+    {
         this->left = move(left);
         this->op = op;
         this->right = move(right);
     }
 };
 
-class AOExpr : public Expr {
+class AOExpr : public Expr
+{
 public:
     unique_ptr<Expr> left;
     string op;
@@ -57,83 +64,94 @@ public:
     AOExpr(
         unique_ptr<Expr> left,
         string op,
-        unique_ptr<Expr> right
-    ){
+        unique_ptr<Expr> right)
+    {
         this->left = move(left);
         this->op = op;
         this->right = move(right);
     }
 };
 
-class BooleanExpr : public Expr {
+class BooleanExpr : public Expr
+{
 public:
-
     bool value;
 
-    BooleanExpr(bool value) {
+    BooleanExpr(bool value)
+    {
         this->value = value;
     }
 };
 
 // STATEMENTS
 
-class Stmt {
+class Stmt
+{
 public:
     virtual ~Stmt() = default;
 };
 
-class PrintStmt : public Stmt {
+class PrintStmt : public Stmt
+{
 public:
     unique_ptr<Expr> expression;
 
-    PrintStmt(unique_ptr<Expr> expression) {
+    PrintStmt(unique_ptr<Expr> expression)
+    {
         this->expression = move(expression);
     }
 };
 
-class VarStmt : public Stmt {
+class VarStmt : public Stmt
+{
 public:
     string name;
     unique_ptr<Expr> initializer;
 
     VarStmt(
         string name,
-        unique_ptr<Expr> initializer
-    ) {
+        unique_ptr<Expr> initializer)
+    {
         this->name = name;
         this->initializer = move(initializer);
     }
 };
 
-class BlockStmt : public Stmt {
+class BlockStmt : public Stmt
+{
 public:
     vector<unique_ptr<Stmt>> statements;
 
-    BlockStmt(vector<unique_ptr<Stmt>> stmts) {
+    BlockStmt(vector<unique_ptr<Stmt>> stmts)
+    {
         this->statements = move(stmts);
     }
 };
 
-class WhileStmt : public Stmt {
+class WhileStmt : public Stmt
+{
 public:
     unique_ptr<Expr> condition;
     unique_ptr<BlockStmt> body;
 
-    WhileStmt(unique_ptr<Expr> condition, unique_ptr<BlockStmt> body) {
+    WhileStmt(unique_ptr<Expr> condition, unique_ptr<BlockStmt> body)
+    {
         this->condition = move(condition);
         this->body = move(body);
     }
 };
 
-class IfStmt : public Stmt {
+class IfStmt : public Stmt
+{
 public:
     unique_ptr<Expr> condition;
     unique_ptr<Stmt> thenBranch;
     unique_ptr<Stmt> elseBranch;
 
     IfStmt(unique_ptr<Expr> condition,
-        unique_ptr<Stmt> thenBranch,
-        unique_ptr<Stmt> elseBranch) {
+           unique_ptr<Stmt> thenBranch,
+           unique_ptr<Stmt> elseBranch)
+    {
         this->condition = move(condition);
         this->thenBranch = move(thenBranch);
         this->elseBranch = move(elseBranch);
@@ -142,7 +160,8 @@ public:
 
 // PROGRAM ROOT
 
-class Program {
+class Program
+{
 public:
     vector<unique_ptr<Stmt>> statements;
 };
