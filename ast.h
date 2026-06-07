@@ -36,6 +36,16 @@ public:
     }
 };
 
+class StringExpr : public Expr
+{
+public:
+    string value;
+
+    StringExpr(string value)
+    {
+        this->value = value;
+    }
+};
 class BinaryExpr : public Expr
 {
 public:
@@ -144,17 +154,35 @@ public:
 class IfStmt : public Stmt
 {
 public:
-    unique_ptr<Expr> condition;
-    unique_ptr<Stmt> thenBranch;
+    vector<unique_ptr<Expr>> conditions;
+    vector<unique_ptr<Stmt>> thenBranches;
     unique_ptr<Stmt> elseBranch;
 
-    IfStmt(unique_ptr<Expr> condition,
-           unique_ptr<Stmt> thenBranch,
+    IfStmt(vector <unique_ptr<Expr>> conditions,
+           vector <unique_ptr<Stmt>> thenBranches,
            unique_ptr<Stmt> elseBranch)
     {
-        this->condition = move(condition);
-        this->thenBranch = move(thenBranch);
+        this->conditions = move(conditions);
+        this->thenBranches = move(thenBranches);
         this->elseBranch = move(elseBranch);
+    }
+};
+
+class ShowStmt : public Stmt {
+public:
+    unique_ptr<Expr> expr;
+
+    ShowStmt(unique_ptr<Expr> expr) {
+        this->expr = move(expr);
+    }
+};
+
+class ScanStmt : public Stmt {
+public:
+    string variable;
+
+    ScanStmt(string variable) {
+        this->variable = variable;
     }
 };
 

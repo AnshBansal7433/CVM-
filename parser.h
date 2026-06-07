@@ -86,8 +86,14 @@ public:
     {
         if (match({VAR}))
             return varDeclaration();
-        else if (match({IDENTIFIER}))
+        else if (match({SHOW}))
+            return showStatement();
+        else if (match({SCAN}))
+            return scanStatement();
+        else if (check(IDENTIFIER) && peek2().type == EQUAL){
+            advance();
             return varChange();
+        }
         else if (match({JABTAK}))
             return whileStatement();
         else if (match({FOR}))
@@ -108,6 +114,7 @@ public:
             advance();
             init = expression();
         }
+        match({SEMICOLON});
         return make_unique<VarStmt>(name.lexeme, move(init));
     }
 
@@ -117,14 +124,34 @@ public:
         if (match({EQUAL}))
         {
             auto init = expression();
+            match({SEMICOLON});
             return make_unique<VarStmt>(name.lexeme, move(init));
         }
+        match({SEMICOLON});
         return nullptr;
+    }
+
+    unique_ptr<Stmt> showStatement()
+    {
+        auto expr = expression();
+        match({SEMICOLON});
+        return make_unique<ShowStmt>(
+            move(expr)
+        );
+    }
+
+    unique_ptr<Stmt> scanStatement()
+    {
+        match({IDENTIFIER});
+        string name = previous().lexeme;
+        match({SEMICOLON});
+        return make_unique<ScanStmt>(name);
     }
 
     unique_ptr<Stmt> printStatement()
     {
         auto expr = expression();
+        match({SEMICOLON});
         return make_unique<PrintStmt>(move(expr));
     }
 
@@ -135,6 +162,11 @@ public:
         if (match({NUMBER}))
         {
             return make_unique<NumberExpr>(previous().lexeme);
+        }
+
+        if (match({STRING}))
+        {
+            return make_unique<StringExpr>(previous().lexeme);
         }
 
         if (match({IDENTIFIER}))
@@ -235,7 +267,7 @@ public:
     {
         match({LEFT_BRACE});
         vector<unique_ptr<Stmt>> stmts;
-        while (!check({RIGHT_BRACE}))
+        while (!check(RIGHT_BRACE)&& !atEnd())
         {
             stmts.push_back(statement());
         }
@@ -290,22 +322,34 @@ public:
 
     unique_ptr<Stmt> ifStatement()
     {
+        vector<unique_ptr<Expr>> conditions;
+        vector<unique_ptr<Stmt>> thenBranches;
         match({LEFT_PAREN});
         auto condition = expression();
+        conditions.push_back(std::move(condition));
         match({RIGHT_PAREN});
         auto thenBranch = blockStatement();
+        thenBranches.push_back(std::move(thenBranch));
         unique_ptr<Stmt> elseBranch = nullptr;
-        if (match({WHEN}))
+        while(match({ELIF})){
+            match({LEFT_PAREN});
+            auto condition = expression();
+            conditions.push_back(std::move(condition));
+            match({RIGHT_PAREN});
+            auto thenBranch = blockStatement();
+            thenBranches.push_back(std::move(thenBranch));
+        }
+        if (match({OTHER}))
         {
-            if (check(LEFT_BRACE))
+            if (match({LEFT_BRACE}))
             {
                 elseBranch = blockStatement();
             }
         }
 
         return make_unique<IfStmt>(
-            move(condition),
-            move(thenBranch),
+            move(conditions),
+            move(thenBranches),
             move(elseBranch));
     }
 };

@@ -41,6 +41,7 @@ enum TokenType
     OTHER,
     SCAN,
     SHOW,
+    
     TRUE,
     FALSE,
     VAR,
