@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include <map>
@@ -41,7 +43,7 @@ enum TokenType
     OTHER,
     SCAN,
     SHOW,
-    
+
     TRUE,
     FALSE,
     VAR,
