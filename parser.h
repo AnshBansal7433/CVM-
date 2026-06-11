@@ -125,7 +125,7 @@ public:
         {
             auto init = expression();
             match({SEMICOLON});
-            return make_unique<VarStmt>(name.lexeme, move(init));
+            return make_unique<AssignStmt>(name.lexeme, move(init));
         }
         match({SEMICOLON});
         return nullptr;
@@ -296,7 +296,6 @@ public:
         {
             initializer = varChange();
         }
-        match({SEMICOLON});
         unique_ptr<Expr> condition = expression();
         match({SEMICOLON});
         unique_ptr<Stmt> increment = nullptr;
@@ -341,7 +340,7 @@ public:
         }
         if (match({OTHER}))
         {
-            if (match({LEFT_BRACE}))
+            if (check(LEFT_BRACE))
             {
                 elseBranch = blockStatement();
             }

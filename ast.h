@@ -14,6 +14,7 @@ class AOExpr;
 class BooleanExpr;
 class PrintStmt;
 class VarStmt;
+class AssignStmt;
 class BlockStmt;
 class WhileStmt;
 class IfStmt;
@@ -36,6 +37,7 @@ class StmtVisitor
 public:
     virtual void visitShow(ShowStmt &s) = 0;
     virtual void visitVar(VarStmt &s) = 0;
+    virtual void visitAssign(AssignStmt &s) = 0;
     virtual void visitBlock(BlockStmt &s) = 0;
     virtual void visitIf(IfStmt &s) = 0;
     virtual void visitWhile(WhileStmt &s) = 0;
@@ -172,6 +174,26 @@ public:
         this->initializer = move(initializer);
     }
     void accept(StmtVisitor &v) override { v.visitVar(*this); }
+};
+
+class AssignStmt : public Stmt
+{
+public:
+    string name;
+    unique_ptr<Expr> value;
+
+    AssignStmt(
+        string name,
+        unique_ptr<Expr> value)
+    {
+        this->name = name;
+        this->value = move(value);
+    }
+
+    void accept(StmtVisitor& v) override
+    {
+        v.visitAssign(*this);
+    }
 };
 
 class BlockStmt : public Stmt

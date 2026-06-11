@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <vector>
+#include <string>
 
 #include "value.h"
 
@@ -36,24 +37,24 @@ typedef enum
     OP_RETURN,
 } OpCode;
 
-typedef struct
+struct Chunk
 {
     int count;
     int capacity;
-    uint8_t *code;
+    uint8_t* code;
     ValueArray constants;
-    vector<string> names;
-} Chunk;
+    std::vector<std::string> names;
+};
 
-void initChunk(Chunk *chunk)
+inline void initChunk(Chunk *chunk)
 {
     chunk->count = 0;
     chunk->capacity = 0;
-    chunk->code = NULL;
+    chunk->code = nullptr;
     initValueArray(&chunk->constants);
 }
 
-void writeChunk(Chunk *chunk, uint8_t byte)
+inline void writeChunk(Chunk *chunk, uint8_t byte)
 {
     if (chunk->capacity < chunk->count + 1)
     {
@@ -65,7 +66,7 @@ void writeChunk(Chunk *chunk, uint8_t byte)
     chunk->count++;
 }
 
-void freeChunk(Chunk *chunk)
+inline void freeChunk(Chunk *chunk)
 {
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
     freeValueArray(&chunk->constants);
@@ -76,7 +77,7 @@ static int simpleInstr(const char *name, int offset);
 static int constantInstr(const char *name, Chunk *chunk, int offset);
 int disassembleInstr(Chunk *chunk, int offset);
 
-void disassembleChunk(Chunk *chunk, const char *name)
+inline void disassembleChunk(Chunk *chunk, const char *name)
 {
     printf("%s", name);
     for (int offset = 0; offset < chunk->count;)
@@ -85,9 +86,9 @@ void disassembleChunk(Chunk *chunk, const char *name)
     }
 }
 
-int disassembleInstr(Chunk *chunk, int offset)
+inline int disassembleInstr(Chunk *chunk, int offset)
 {
-    printf("%04d", offset);
+    printf("%04d ", offset);
     uint8_t instruction = chunk->code[offset];
     switch (instruction)
     {
@@ -108,14 +109,24 @@ static int simpleInstr(const char *name, int offset)
 
 static int constantInstr(const char *name, Chunk *chunk, int offset)
 {
+    if (offset + 1 >= chunk->count)
+    {
+        printf("Corrupt bytecode\n");
+        return chunk->count;
+    }
     uint8_t constant = chunk->code[offset + 1];
     printf("%-16s %4d", name, constant);
+    if (constant >= chunk->constants.count)
+    {
+        printf("Invalid constant index %d\n", constant);
+        return chunk->count;
+    }
     printValue(chunk->constants.values[constant]);
     printf("\n");
     return offset + 2;
 }
 
-int addConstant(Chunk *chunk, Value value)
+inline int addConstant(Chunk *chunk, Value value)
 {
     writeValueArray(&chunk->constants, value);
     return chunk->constants.count - 1;

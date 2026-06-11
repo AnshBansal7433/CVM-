@@ -141,6 +141,15 @@ public:
         emitBytes(OP_STORE, nameConstant(s.name));
     }
 
+    void visitAssign(AssignStmt &s) override
+    {
+        s.value->accept(*this);
+
+        emitBytes(
+            OP_STORE,
+            nameConstant(s.name));
+    }
+
     void visitBlock(BlockStmt &s) override
     {
         for (auto &stmt : s.statements)
