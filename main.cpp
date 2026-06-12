@@ -1,13 +1,12 @@
 #include <iostream>
-#include <fstream>
-#include <string>
 #include "lexer.h"
 #include "parser.h"
 #include "compiler.hpp"
+#include "vm.hpp"
 
 int main()
 {
-    std::string source = "var x = 5; show x + 3;";
+    string source = "var x = 5; show x + 3;";
 
     Lexer lexer(source);
     auto tokens = lexer.scan();
@@ -22,6 +21,10 @@ int main()
     compiler.compile(program);
 
     disassembleChunk(&chunk, "=== bytecode ===\n");
+
+    printf("=== output ===\n");
+    VM vm;
+    vm.interpret(&chunk);
 
     freeChunk(&chunk);
     return 0;
