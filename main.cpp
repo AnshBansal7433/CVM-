@@ -1,12 +1,26 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
+
 #include "lexer.h"
 #include "parser.h"
 #include "compiler.hpp"
 #include "vm.hpp"
 
-int main()
+int main(int argc, char* argv[])
 {
-    string source = "var x = 5; show x + 3;";
+    if (argc != 2)
+    {
+        cout << "Usage: cvm <file>\n";
+        return 1;
+    }
+
+    ifstream file(argv[1]);
+
+    stringstream buffer;
+    buffer << file.rdbuf();
+
+    string source = buffer.str();
 
     Lexer lexer(source);
     auto tokens = lexer.scan();
@@ -20,9 +34,6 @@ int main()
     Compiler compiler(&chunk);
     compiler.compile(program);
 
-    disassembleChunk(&chunk, "=== bytecode ===\n");
-
-    printf("=== output ===\n");
     VM vm;
     vm.interpret(&chunk);
 

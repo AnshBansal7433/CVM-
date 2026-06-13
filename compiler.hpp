@@ -19,8 +19,14 @@ private:
         return (uint8_t)addConstant(chunk, val);
     }
 
-    uint8_t nameConstant(const string &name)
+    uint8_t resolveName(const string& name)
     {
+        for (size_t i = 0; i < chunk->names.size(); i++)
+        {
+            if (chunk->names[i] == name)
+                return (uint8_t)i;
+        }
+
         chunk->names.push_back(name);
         return (uint8_t)(chunk->names.size() - 1);
     }
@@ -72,12 +78,17 @@ public:
 
     void visitVariable(VariableExpr &e) override
     {
-        emitBytes(OP_LOAD, nameConstant(e.name));
+        emitBytes(OP_LOAD, resolveName(e.name));
     }
 
     void visitString(StringExpr &e) override
     {
-        // strings out of scope for now
+        auto* str = new std::string(e.value);
+
+        emitBytes(
+            OP_CONSTANT,
+            makeConstant(STRING_VAL(str))
+        );
     }
 
     void visitBinary(BinaryExpr &e) override
@@ -138,16 +149,15 @@ public:
             s.initializer->accept(*this);
         else
             emitBytes(OP_CONSTANT, makeConstant(NUMBER_VAL(0)));
-        emitBytes(OP_STORE, nameConstant(s.name));
+        emitBytes(OP_STORE, resolveName(s.name));
     }
 
     void visitAssign(AssignStmt &s) override
     {
         s.value->accept(*this);
-
         emitBytes(
             OP_STORE,
-            nameConstant(s.name));
+            resolveName(s.name));
     }
 
     void visitBlock(BlockStmt &s) override
@@ -189,6 +199,6 @@ public:
 
     void visitScan(ScanStmt &s) override
     {
-        emitBytes(OP_SCAN, nameConstant(s.variable));
+        emitBytes(OP_SCAN, resolveName(s.variable));
     }
 };
