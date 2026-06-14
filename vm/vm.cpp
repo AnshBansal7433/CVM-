@@ -194,9 +194,24 @@ InterpretResult VM::run()
         {
             uint8_t slot = readByte();
             ensureGlobalSlot(slot);
-            double input;
-            std::cin >> input;
-            globals[slot] = NUMBER_VAL(input);
+
+            if (IS_STRING(globals[slot]))
+            {
+                std::string input;
+                std::getline(std::cin >> std::ws, input);
+
+                globals[slot] = STRING_VAL(
+                    new std::string(input)
+                );
+            }
+            else
+            {
+                double input;
+                std::cin >> input;
+
+                globals[slot] = NUMBER_VAL(input);
+            }
+
             break;
         }
 

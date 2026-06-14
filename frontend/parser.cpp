@@ -205,22 +205,36 @@ unique_ptr<Expr> Parser::primary()
 
 unique_ptr<Expr> Parser::multiplication()
 {
-    auto expr = primary();
+    auto expr = unary();
 
     while (match({STAR, SLASH}))
     {
         Token op = previous();
-
-        auto right = primary();
+        auto right = unary();
 
         expr = make_unique<BinaryExpr>(
             move(expr),
+            op.lexeme,
+            move(right));
+    }
+
+    return expr;
+}
+
+unique_ptr<Expr> Parser::unary()
+{
+    if (match({MINUS}))
+    {
+        Token op = previous();
+        auto right = unary();
+
+        return make_unique<UnaryExpr>(
             op.lexeme,
             move(right)
         );
     }
 
-    return expr;
+    return primary();
 }
 
 unique_ptr<Expr> Parser::addition()

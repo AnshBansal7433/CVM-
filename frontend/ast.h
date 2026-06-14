@@ -12,6 +12,7 @@ class StringExpr;
 class BinaryExpr;
 class AOExpr;
 class BooleanExpr;
+class UnaryExpr;
 class PrintStmt;
 class VarStmt;
 class AssignStmt;
@@ -30,6 +31,7 @@ public:
     virtual void visitVariable(VariableExpr &e) = 0;
     virtual void visitBinary(BinaryExpr &e) = 0;
     virtual void visitAO(AOExpr &e) = 0;
+    virtual void visitUnary(UnaryExpr& e) = 0;
 };
 
 class StmtVisitor
@@ -76,6 +78,26 @@ public:
         this->name = name;
     }
     void accept(ExpVisitor &v) override { v.visitVariable(*this); }
+};
+
+class UnaryExpr : public Expr
+{
+public:
+    string op;
+    unique_ptr<Expr> right;
+
+    UnaryExpr(
+        string op,
+        unique_ptr<Expr> right)
+    {
+        this->op = op;
+        this->right = move(right);
+    }
+
+    void accept(ExpVisitor& v) override
+    {
+        v.visitUnary(*this);
+    }
 };
 
 class StringExpr : public Expr
@@ -290,6 +312,13 @@ public:
     {
         tabs();
         std::cout << "Number(" << e.value << ")\n";
+    }
+
+    void visitUnary(UnaryExpr& e) override
+    {
+        cout << "(Unary " << e.op << " ";
+        e.right->accept(*this);
+        cout << ")";
     }
 
     void visitString(StringExpr& e) override

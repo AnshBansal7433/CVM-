@@ -37,6 +37,7 @@ public:
     unique_ptr<Expr> multiplication();
     unique_ptr<Expr> expression();
     unique_ptr<Expr> comparison();
+    unique_ptr<Expr> unary();
 
     unique_ptr<BlockStmt> blockStatement();
     unique_ptr<Stmt> whileStatement();

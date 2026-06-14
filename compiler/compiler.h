@@ -76,6 +76,16 @@ public:
         emitByte(e.value ? OP_TRUE : OP_FALSE);
     }
 
+    void visitUnary(UnaryExpr& e) override
+    {
+        e.right->accept(*this);
+
+        if (e.op == "-")
+        {
+            emitByte(OP_NEGATE);
+        }
+    }
+
     void visitVariable(VariableExpr &e) override
     {
         emitBytes(OP_LOAD, resolveName(e.name));

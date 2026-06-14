@@ -75,8 +75,8 @@ inline void freeChunk(Chunk *chunk)
 
 static int simpleInstr(const char *name, int offset);
 static int constantInstr(const char *name, Chunk *chunk, int offset);
-static int byteInstr(const char *name, Chunk *chunk, int offset);           // for OP_LOAD/OP_STORE/OP_SCAN (1-byte operand)
-static int jumpInstr(const char *name, int sign, Chunk *chunk, int offset); // for jumps (2-byte operand)
+static int byteInstr(const char *name, Chunk *chunk, int offset);
+static int jumpInstr(const char *name, int sign, Chunk *chunk, int offset); 
 int disassembleInstr(Chunk *chunk, int offset);
 
 inline void disassembleChunk(Chunk *chunk, const char *name)
@@ -177,7 +177,6 @@ static int constantInstr(const char *name, Chunk *chunk, int offset)
     return offset + 2;
 }
 
-// for OP_LOAD / OP_STORE / OP_SCAN — operand is an index into chunk->names
 static int byteInstr(const char *name, Chunk *chunk, int offset)
 {
     uint8_t slot = chunk->code[offset + 1];
@@ -188,7 +187,6 @@ static int byteInstr(const char *name, Chunk *chunk, int offset)
     return offset + 2;
 }
 
-// for OP_JUMP / OP_JUMP_IF_FALSE / OP_LOOP — 2-byte big-endian operand
 static int jumpInstr(const char *name, int sign, Chunk *chunk, int offset)
 {
     uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
