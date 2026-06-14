@@ -271,3 +271,185 @@ class Program
 public:
     vector<unique_ptr<Stmt>> statements;
 };
+
+#include <iostream>
+
+class ASTPrinter : public ExpVisitor, public StmtVisitor
+{
+    int indent = 0;
+
+    void tabs()
+    {
+        for (int i = 0; i < indent; i++)
+            std::cout << "  ";
+    }
+
+public:
+
+    void visitNumber(NumberExpr& e) override
+    {
+        tabs();
+        std::cout << "Number(" << e.value << ")\n";
+    }
+
+    void visitString(StringExpr& e) override
+    {
+        tabs();
+        std::cout << "String(" << e.value << ")\n";
+    }
+
+    void visitBoolean(BooleanExpr& e) override
+    {
+        tabs();
+        std::cout << "Bool(" << (e.value ? "true" : "false") << ")\n";
+    }
+
+    void visitVariable(VariableExpr& e) override
+    {
+        tabs();
+        std::cout << "Variable(" << e.name << ")\n";
+    }
+
+    void visitBinary(BinaryExpr& e) override
+    {
+        tabs();
+        std::cout << "Binary(" << e.op << ")\n";
+
+        indent++;
+        e.left->accept(*this);
+        e.right->accept(*this);
+        indent--;
+    }
+
+    void visitAO(AOExpr& e) override
+    {
+        tabs();
+        std::cout << "Logical(" << e.op << ")\n";
+
+        indent++;
+        e.left->accept(*this);
+        e.right->accept(*this);
+        indent--;
+    }
+
+    void visitVar(VarStmt& s) override
+    {
+        tabs();
+        std::cout << "VarStmt(" << s.name << ")\n";
+
+        if (s.initializer)
+        {
+            indent++;
+            s.initializer->accept(*this);
+            indent--;
+        }
+    }
+
+    void visitAssign(AssignStmt& s) override
+    {
+        tabs();
+        std::cout << "AssignStmt(" << s.name << ")\n";
+
+        indent++;
+        s.value->accept(*this);
+        indent--;
+    }
+
+    void visitShow(ShowStmt& s) override
+    {
+        tabs();
+        std::cout << "ShowStmt\n";
+
+        indent++;
+        s.expr->accept(*this);
+        indent--;
+    }
+
+    void visitPrint(PrintStmt& s) override
+    {
+        tabs();
+        std::cout << "PrintStmt\n";
+
+        indent++;
+        s.expression->accept(*this);
+        indent--;
+    }
+
+    void visitScan(ScanStmt& s) override
+    {
+        tabs();
+        std::cout << "ScanStmt(" << s.variable << ")\n";
+    }
+
+    void visitBlock(BlockStmt& s) override
+    {
+        tabs();
+        std::cout << "BlockStmt\n";
+
+        indent++;
+
+        for (auto& stmt : s.statements)
+            stmt->accept(*this);
+
+        indent--;
+    }
+
+    void visitWhile(WhileStmt& s) override
+    {
+        tabs();
+        std::cout << "WhileStmt\n";
+
+        indent++;
+
+        tabs();
+        std::cout << "Condition\n";
+
+        indent++;
+        s.condition->accept(*this);
+        indent--;
+
+        tabs();
+        std::cout << "Body\n";
+
+        indent++;
+        s.body->accept(*this);
+        indent -= 2;
+    }
+
+    void visitIf(IfStmt& s) override
+    {
+        tabs();
+        std::cout << "IfStmt\n";
+
+        indent++;
+
+        for (size_t i = 0; i < s.conditions.size(); i++)
+        {
+            tabs();
+            std::cout << "Condition\n";
+
+            indent++;
+            s.conditions[i]->accept(*this);
+            indent--;
+
+            tabs();
+            std::cout << "Then\n";
+
+            indent++;
+            s.thenBranches[i]->accept(*this);
+            indent--;
+        }
+
+        if (s.elseBranch)
+        {
+            tabs();
+            std::cout << "Else\n";
+
+            indent++;
+            s.elseBranch->accept(*this);
+            indent--;
+        }
+
+        indent--;
+    }
+};
