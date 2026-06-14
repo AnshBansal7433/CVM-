@@ -1,32 +1,32 @@
 # CVM - Custom Virtual Machine
 
-A small interpreted programming language written in **C++** featuring:
+A small interpreted programming language written in **C++** featuring a complete compilation pipeline:
 
-- Lexer
-- Parser
-- Abstract Syntax Tree (AST)
-- Bytecode Compiler
-- Stack-Based Virtual Machine
+* Lexer
+* Parser
+* Abstract Syntax Tree (AST)
+* Bytecode Compiler
+* Stack-Based Virtual Machine
 
-The project demonstrates the complete language pipeline from source code to execution.
+The goal of this project is to understand how programming languages work internally—from lexical analysis and parsing to bytecode generation and execution.
 
 ---
 
 # Features
 
-- Variable declarations
-- Variable assignment
-- Arithmetic expressions
-- Boolean expressions
-- Comparison operators
-- Logical operators
-- If / Else If / Else
-- While loops
-- For loops
-- User input
-- Output statements
-- Bytecode compilation
-- Stack-based VM execution
+* Variable declarations
+* Variable assignment
+* Arithmetic expressions
+* Boolean expressions
+* Comparison operators
+* Logical operators
+* If / Else If / Else
+* While loops
+* For loops
+* User input (`scan`)
+* Output (`show`)
+* Bytecode compilation
+* Stack-based virtual machine execution
 
 ---
 
@@ -86,9 +86,9 @@ show 10 != 5;
 ## Logical Operators
 
 | Operator | Meaning |
-|-----------|----------|
-| aur | AND |
-| ya | OR |
+| -------- | ------- |
+| aur      | AND     |
+| ya       | OR      |
 
 Example:
 
@@ -147,16 +147,6 @@ jabtak (i < 5) {
 }
 ```
 
-Output:
-
-```text
-0
-1
-2
-3
-4
-```
-
 ---
 
 ## For Loop
@@ -180,37 +170,39 @@ show x;
 
 # Keywords
 
-| Keyword | Description |
-|----------|-------------|
-| var | Variable declaration |
-| show | Print output |
-| scan | Read input |
-| when | If statement |
-| elif | Else-if statement |
-| other | Else statement |
-| jabtak | While loop |
-| for | For loop |
-| aur | Logical AND |
-| ya | Logical OR |
-| true | Boolean true |
-| false | Boolean false |
+| Keyword | Description          |
+| ------- | -------------------- |
+| var     | Variable declaration |
+| show    | Print output         |
+| scan    | Read input           |
+| when    | If statement         |
+| elif    | Else-if statement    |
+| other   | Else statement       |
+| jabtak  | While loop           |
+| for     | For loop             |
+| aur     | Logical AND          |
+| ya      | Logical OR           |
+| true    | Boolean true         |
+| false   | Boolean false        |
 
 ---
 
 # Example Program
 
 ```c
-var x=(3+5)*(6+7);
+var sum = 0;
 
-when(x aur 0){
-    show x;
+for (var i = 1; i <= 5; i = i + 1;) {
+    sum = sum + i;
 }
+
+show sum;
 ```
 
 Output:
 
 ```text
-104
+15
 ```
 
 ---
@@ -236,66 +228,48 @@ type: TOKEN_EOF, value: , line: 1
 
 ---
 
-# Lexer Demo - Conditional Statement
+# Parser & AST
 
-Source:
+The parser converts the token stream into an Abstract Syntax Tree (AST).
 
-```c
-when (x >= 10) {
-    x = x + 1;
-}
-```
-
-Output:
-
-```text
-type: WHEN, value: when, line: 1
-type: LEFT_PAREN, value: (, line: 1
-type: IDENTIFIER, value: x, line: 1
-type: GREATER_EQUAL, value: >=, line: 1
-type: NUMBER, value: 10, line: 1
-type: RIGHT_PAREN, value: ), line: 1
-type: LEFT_BRACE, value: {, line: 1
-type: IDENTIFIER, value: x, line: 2
-type: EQUAL, value: =, line: 2
-type: IDENTIFIER, value: x, line: 2
-type: PLUS, value: +, line: 2
-type: NUMBER, value: 1, line: 2
-type: SEMICOLON, value: ;, line: 2
-type: RIGHT_BRACE, value: }, line: 3
-type: TOKEN_EOF, value: , line: 3
-```
-
----
-
-# AST Demo
-
-Source:
+Example:
 
 ```c
-var x=(3+5)*(6+7);
+var x = (3 + 5) * (6 + 7);
 ```
 
 Example AST:
 
 ```text
-VarStmt(x)
-└── BinaryExpr(*)
-    ├── BinaryExpr(+)
-    │   ├── NumberExpr(3)
-    │   └── NumberExpr(5)
-    └── BinaryExpr(+)
-        ├── NumberExpr(6)
-        └── NumberExpr(7)
+VarStmt(n)
+  Number(5)
+VarStmt(fact)
+  Number(1)
+WhileStmt
+  Condition
+    Binary(>)
+      Variable(n)
+      Number(1)
+  Body
+    BlockStmt
+      AssignStmt(fact)
+        Binary(*)
+          Variable(fact)
+          Variable(n)
+      AssignStmt(n)
+        Binary(-)
+          Variable(n)
+          Number(1)
 ```
 
-> Replace this section with the exact output produced by your AST printer.
 
 ---
 
-# Bytecode Demo
+# Bytecode Generation
 
-Source:
+The compiler converts the AST into bytecode instructions executed by the VM.
+
+Example:
 
 ```c
 var x = 10;
@@ -305,32 +279,26 @@ show x;
 Example Bytecode:
 
 ```text
-0000 OP_CONSTANT      0 10
-0002 OP_STORE         0 'x'
-0004 OP_LOAD          0 'x'
-0006 OP_PRINT
-0007 OP_RETURN
-```
-
-> Replace this section with the exact output from your disassembler.
-
----
-
-# Execution Demo
-
-Program:
-
-```c
-var a = 10;
-var b = 20;
-
-show a + b;
-```
-
-Output:
-
-```text
-30
+0000 OP_CONSTANT         0 5
+0002 OP_STORE            0 'n'
+0004 OP_CONSTANT         1 1
+0006 OP_STORE            1 'fact'
+0008 OP_LOAD             0 'n'
+0010 OP_CONSTANT         2 1
+0012 OP_GREATER
+0013 OP_JUMP_IF_FALSE   13 -> 34
+0016 OP_POP
+0017 OP_LOAD             1 'fact'
+0019 OP_LOAD             0 'n'
+0021 OP_MUL
+0022 OP_STORE            1 'fact'
+0024 OP_LOAD             0 'n'
+0026 OP_CONSTANT         3 1
+0028 OP_SUB
+0029 OP_STORE            0 'n'
+0031 OP_LOOP            31 -> 8
+0034 OP_POP
+0035 OP_RETURN
 ```
 
 ---
@@ -339,22 +307,22 @@ Output:
 
 ```text
 Source Code
-    ↓
-Lexer
-    ↓
-Tokens
-    ↓
-Parser
-    ↓
-AST
-    ↓
-Compiler
-    ↓
-Bytecode
-    ↓
+      ↓
+    Lexer
+      ↓
+    Tokens
+      ↓
+    Parser
+      ↓
+      AST
+      ↓
+   Compiler
+      ↓
+   Bytecode
+      ↓
 Virtual Machine
-    ↓
-Program Output
+      ↓
+    Output
 ```
 
 ---
@@ -381,8 +349,6 @@ Program Output
 
 # Build
 
-Windows:
-
 ```bat
 build.bat
 ```
@@ -401,7 +367,7 @@ cvm.exe
 cvm.exe hi.txt
 ```
 
-Example:
+or
 
 ```bat
 cvm.exe program.txt
@@ -409,31 +375,7 @@ cvm.exe program.txt
 
 ---
 
-# Compilation Pipeline
-
-```text
-Source Code
-      ↓
-    Lexer
-      ↓
-    Tokens
-      ↓
-    Parser
-      ↓
-      AST
-      ↓
-   Compiler
-      ↓
-   Bytecode
-      ↓
-Virtual Machine
-      ↓
-    Output
-```
-
-
----
 
 # Inspiration
 
-CVM is a learning project built to understand how programming languages work internally—from lexical analysis and parsing to bytecode generation and virtual machine execution.
+CVM is a learning project built to explore how interpreters, compilers, and virtual machines work under the hood.

@@ -1,5 +1,7 @@
-var x=(3+5)*(6+7);
-when(x aur 0){
-show x;
+var n = 5;
+var fact = 1;
+
+jabtak (n > 1) {
+    fact = fact * n;
+    n = n - 1;
 }
-show x;
