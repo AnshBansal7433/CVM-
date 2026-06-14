@@ -1,4 +1,4 @@
-#include "vm.hpp"
+#include "vm.h"
 #include <iostream>
 
 InterpretResult VM::run()

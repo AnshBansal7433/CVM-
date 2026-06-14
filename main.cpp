@@ -2,10 +2,10 @@
 #include <fstream>
 #include <sstream>
 
-#include "lexer.h"
-#include "parser.h"
-#include "compiler.hpp"
-#include "vm.hpp"
+#include "frontend/lexer.cpp"
+#include "frontend/parser.cpp"
+#include "compiler/compiler.h"
+#include "vm/vm.cpp"
 
 int main(int argc, char* argv[])
 {

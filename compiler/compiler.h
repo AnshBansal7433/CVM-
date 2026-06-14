@@ -1,6 +1,6 @@
 #pragma once
-#include "ast.h"
-#include "chunk.h"
+#include "../frontend/ast.h"
+#include "../vm/chunk.h"
 
 class Compiler : public ExpVisitor, public StmtVisitor
 {
