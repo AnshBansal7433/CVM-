@@ -236,30 +236,22 @@ Example:
 
 ```c
 var x = (3 + 5) * (6 + 7);
+show x;
 ```
 
 Example AST:
 
 ```text
-VarStmt(n)
-  Number(5)
-VarStmt(fact)
-  Number(1)
-WhileStmt
-  Condition
-    Binary(>)
-      Variable(n)
-      Number(1)
-  Body
-    BlockStmt
-      AssignStmt(fact)
-        Binary(*)
-          Variable(fact)
-          Variable(n)
-      AssignStmt(n)
-        Binary(-)
-          Variable(n)
-          Number(1)
+VarStmt(x)
+  Binary(*)
+    Binary(+)
+      Number(3)
+      Number(5)
+    Binary(+)
+      Number(6)
+      Number(7)
+ShowStmt
+  Variable(x)
 ```
 
 
@@ -279,27 +271,13 @@ show x;
 Example Bytecode:
 
 ```text
-0000 OP_CONSTANT         0 5
-0002 OP_STORE            0 'n'
-0004 OP_CONSTANT         1 1
-0006 OP_STORE            1 'fact'
-0008 OP_LOAD             0 'n'
-0010 OP_CONSTANT         2 1
-0012 OP_GREATER
-0013 OP_JUMP_IF_FALSE   13 -> 34
-0016 OP_POP
-0017 OP_LOAD             1 'fact'
-0019 OP_LOAD             0 'n'
-0021 OP_MUL
-0022 OP_STORE            1 'fact'
-0024 OP_LOAD             0 'n'
-0026 OP_CONSTANT         3 1
-0028 OP_SUB
-0029 OP_STORE            0 'n'
-0031 OP_LOOP            31 -> 8
-0034 OP_POP
-0035 OP_RETURN
+0000 OP_CONSTANT      0 10
+0002 OP_STORE         0 'x'
+0004 OP_LOAD          0 'x'
+0006 OP_PRINT
+0007 OP_RETURN
 ```
+
 
 ---
 
