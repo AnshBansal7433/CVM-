@@ -1,0 +1,11 @@
+var x = 5;
+
+when (x > 10) {
+    show 2;
+}
+elif (x > 4) {
+    show 1;
+}
+other {
+    show 0;
+}

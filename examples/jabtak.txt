@@ -5,3 +5,5 @@ jabtak (n > 1) {
     fact = fact * n;
     n = n - 1;
 }
+
+show fact;

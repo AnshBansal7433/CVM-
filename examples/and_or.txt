@@ -1,0 +1,9 @@
+var x = 50;
+
+when(x > 0 aur x < 100) {
+    show x;
+}
+
+when(x > 0 ya x < 40) {
+    show x+10;
+}
