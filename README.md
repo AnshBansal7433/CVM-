@@ -309,18 +309,33 @@ Virtual Machine
 
 ```text
 .
+CVM/
+│
+├── common/
+│   └── memory.h
+│
+├── compiler/
+│   └── compiler.h
+│
+├── examples/
+│
+├── frontend/
+│   ├── ast.h
+│   ├── lexer.h
+│   ├── lexer.cpp
+│   ├── parser.h
+│   ├── parser.cpp
+│   └── token.h
+│
+├── vm/
+│   ├── chunk.h
+│   ├── value.h
+│   ├── vm.h
+│   └── vm.cpp
+│
 ├── main.cpp
-├── lexer.h
-├── parser.h
-├── ast.h
-├── compiler.hpp
-├── chunk.h
-├── value.h
-├── vm.hpp
-├── vm.cpp
-├── hi.txt
 ├── build.bat
-└── README.md
+└── cvm.exe
 ```
 
 ---
